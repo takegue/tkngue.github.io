@@ -1,0 +1,12 @@
+site:
+  lang: en
+  name: This is test
+  tagline: Setting a good example!
+  description: This example website will amaze you!
+  keywords: example, website, amazing
+
+main:
+  welcomeSection:
+    anchor: welcome
+    heading: Welcome to this marvelous webseite.
+    p1:  bbbbbbbbbb

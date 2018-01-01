@@ -1,0 +1,12 @@
+site:
+  lang: ja
+  name: 竹野 峻輔のプロフィール
+  tagline: Setting a good example!
+  description: This example website will amaze you!
+  keywords: example, website, amazing
+
+main:
+  welcomeSection:
+    anchor: welcome
+    heading: Welcome to this marvelous webseite.
+    p1: あいうえお

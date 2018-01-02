@@ -5,6 +5,9 @@ defaults: &defaults
   docker:
     - image: circleci/ruby:2.4.2
 
+cache_gem: &cache_gem
+  key: gems-v1-{{ checksum "Gemfile.lock" }}
+
 version: 2
 
 general:
@@ -15,12 +18,17 @@ general:
 jobs:
   build:
     <<: *defaults
+    environment:
+      NOKOGIRI_USE_SYSTEM_LIBRARIES: true
     steps:
       - checkout
-      - run: |
-          bundle install
-          bundle exec jekyll build
-
+      - restore_cache: *cache_gem
+      - run: bundle install --deployment
+      - save_cache: 
+          <<: *cache_gem
+          paths:
+            - vendor/bundle
+      - run: bundle exec jekyll build
       - persist_to_workspace:
           root: _site
           paths:
@@ -30,11 +38,11 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache: *cache_gem
+      - run: bundle install --deployment
       - attach_workspace:
           at: _site
-      - run: |
-          bundle install
-          bundle exec htmlproofer ./_site --check-html
+      - run: bundle exec htmlproofer ./_site --check-html
 
   deploy:
     <<: *defaults

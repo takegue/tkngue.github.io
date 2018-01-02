@@ -26,6 +26,16 @@ jobs:
           paths:
             - ./*
 
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: _site
+      - run: |
+          bundle install
+          bundle exec htmlproofer ./_site --check-html
+
   deploy:
     <<: *defaults
     steps:
@@ -51,7 +61,10 @@ workflows:
   build_and_deploy:
     jobs:
       - build
-      - deploy:
+      - test:
           requires:
             - build
+      - deploy:
+          requires:
+            - test
 

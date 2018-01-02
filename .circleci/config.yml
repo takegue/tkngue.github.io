@@ -64,8 +64,7 @@ jobs:
             rm -rf _site
             git add .
             git commit -a -m "Deploy ${CIRCLE_BUILD_NUM}"
-      - run:
-          name: "Deploy products"
+      - deploy:
           command: git push origin master
  
 

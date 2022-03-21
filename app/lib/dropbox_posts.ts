@@ -65,10 +65,16 @@ export async function getDropboxPaperDocuments(limit: number = 10) {
         throw "Not Implemented"
     } 
 
-    const resp = await dbx.paperDocsList({
+    const errorHandler = (name, id) => (e) => {
+        console.log(`Error on ${name}: ${id}`, e)
+        return e
+    }
+
+    const query = {
         sort_by: <paper.ListPaperDocsSortByCreated>{".tag": "created"},
         sort_order:  <paper.ListPaperDocsSortOrderDescending>{".tag": "descending"},
-    }).catch((e) => {
+    }
+    const resp = await dbx.paperDocsList(query).catch((e) => {
         console.log("tirgger error");
         console.log(e);
         return e
@@ -79,25 +85,22 @@ export async function getDropboxPaperDocuments(limit: number = 10) {
     if(limit == null && resp.result.has_more) {
         throw "docs_ids has more. not implemented"
     }
-    console.log(resp);
 
-
-    const errorHandler = (name, id) => (e) => {
-        console.log(`Error on ${name}: ${id}`, e)
-        return e
-    }
     const paperDocs = await Promise.all(
-        resp.result.doc_ids.map(id => promiseObject({
+        resp.result.doc_ids.slice(0, 10).map(id => promiseObject({
             id,
             metadata: fetchDropboxPaperMetadata(id)
                 .catch(errorHandler("fetchDropboxPaperMetadata", id)),
-            folder: dbx.paperDocsGetFolderInfo({doc_id: id})
-                .then(r => r.result)
+            folders: dbx.paperDocsGetFolderInfo({doc_id: id})
+                .then(r => r.result.folders ?? [])
                 .catch(errorHandler("dbx.paperDocsGetFolderInfo", id)),
         }))
     )
+    console.dir(paperDocs, {depth: null})
 
+    const findKey = "e.1gg8YzoPEhbTkrhvQwJ2zzRRXbLavx0gftrkjbdMUpxi0bPCcY9G"
     return paperDocs
+        .filter(p => p.folders.slice(0)[0]?.id == findKey)
         .map((p) => ({
             ...p,
             title: p.metadata?.title,

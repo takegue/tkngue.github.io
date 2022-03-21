@@ -13,7 +13,7 @@ type IPostData = {
 
 
 export async function getStaticProps() {
-  const allPostsData = await getDropboxPaperDocuments()
+  const allPostsData = await getDropboxPaperDocuments(30)
   return {
     props: {
       allPostsData

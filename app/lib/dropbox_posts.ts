@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
-import dropbox from 'dropbox';
+import { Dropbox } from 'dropbox';
 import {remark}  from 'remark';
 import html from 'remark-html';
 
-const dbx = new dropbox.Dropbox({ accessToken: process.env.DROPBOX_TOKEN });
+const dbx = new Dropbox({ accessToken: process.env.DROPBOX_TOKEN });
 
 const httpClient = async (
     url: string,
@@ -50,6 +50,7 @@ export async function getDropboxPaperDocuments() {
             sort_by: <dropbox.paper.ListPaperDocsSortByModified>{".tag": "modified"},
             sort_order:  <dropbox.paper.ListPaperDocsSortOrderDescending>{".tag": "descending"}
         });
+
     if(resp.status != 200){
         throw resp
     }
@@ -79,7 +80,12 @@ export async function getDropboxPaperDocuments() {
             {doc_id: id},
             []
         )
-    })))
+    }))).then((post) => ({
+        ...post,
+        title: post.metadata?.title,
+        date: post.metadata.created_date,
+    }))
+    console.log(paperDocs[0])
 
     return paperDocs.sort((a:any, b:any) => {
         const date_a = a.metadata.last_modified_update;

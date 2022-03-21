@@ -1,0 +1,3 @@
+
+build:
+	npx next build && npx next export -o ../docs

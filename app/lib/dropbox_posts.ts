@@ -54,7 +54,7 @@ async function fetchDropboxPaperMetadata(doc_id: string) {
 }
 
 
-export async function getDropboxPaperDocuments() {
+export async function getDropboxPaperDocuments(limit: number = 10) {
     const respFeatures = await dbx.usersFeaturesGetValues({features: [{".tag": "paper_as_files"}]})
     if(respFeatures.status != 200){
         throw respFeatures
@@ -65,33 +65,44 @@ export async function getDropboxPaperDocuments() {
         throw "Not Implemented"
     } 
 
-    const resp = await dbx.paperDocsList(
-        {
-            sort_by: <paper.ListPaperDocsSortByModified>{".tag": "modified"},
-            sort_order:  <paper.ListPaperDocsSortOrderDescending>{".tag": "descending"}
-        });
-
-    if(resp.status != 200){
-        throw resp
+    const resp = await dbx.paperDocsList({
+        sort_by: <paper.ListPaperDocsSortByCreated>{".tag": "created"},
+        sort_order:  <paper.ListPaperDocsSortOrderDescending>{".tag": "descending"},
+    }).catch((e) => {
+        console.log("tirgger error");
+        console.log(e);
+        return e
+    });
+    if(resp == null || resp.status != 200){
+        throw resp 
     }
-    if(resp.result.has_more) {
+    if(limit == null && resp.result.has_more) {
         throw "docs_ids has more. not implemented"
     }
+    console.log(resp);
 
+
+    const errorHandler = (name, id) => (e) => {
+        console.log(`Error on ${name}: ${id}`, e)
+        return e
+    }
     const paperDocs = await Promise.all(
-        resp.result.doc_ids.slice(1, 10).map(id => promiseObject({
-        id,
-        metadata: fetchDropboxPaperMetadata(id),
-        folder: dbx.paperDocsGetFolderInfo({doc_id: id}).then(r => r.result)
+        resp.result.doc_ids.map(id => promiseObject({
+            id,
+            metadata: fetchDropboxPaperMetadata(id)
+                .catch(errorHandler("fetchDropboxPaperMetadata", id)),
+            folder: dbx.paperDocsGetFolderInfo({doc_id: id})
+                .then(r => r.result)
+                .catch(errorHandler("dbx.paperDocsGetFolderInfo", id)),
         }))
     )
 
     return paperDocs
-    .map((p) => ({
-        ...p,
-        title: p.metadata?.title,
-        date: p.metadata.created_date
-    })).sort((a:any, b:any) => {
+        .map((p) => ({
+            ...p,
+            title: p.metadata?.title,
+            date: p.metadata.created_date
+        })).sort((a:any, b:any) => {
         const date_a = a.metadata?.last_updated_update;
         const date_b = b.metadata?.last_updated_update;
         if(date_a > date_b) {

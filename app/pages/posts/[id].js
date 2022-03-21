@@ -9,7 +9,6 @@ import utilStyles from '../../styles/utils.module.css'
 
 export async function getStaticProps({ params }) {
   const postData = await getDropboxPaperPost(params.id)
-  console.log(postData)
   return {
     props: {
       postData
@@ -18,7 +17,7 @@ export async function getStaticProps({ params }) {
 }
 
 export async function getStaticPaths() {
-  const allPostsData = await getDropboxPaperDocuments()
+  const allPostsData = await getDropboxPaperDocuments(null)
   return {
     paths: allPostsData.map(p => ({ params: { id: p.id } })),
     fallback: false

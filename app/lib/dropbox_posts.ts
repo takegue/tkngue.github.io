@@ -81,12 +81,7 @@ export async function getDropboxPaperDocuments() {
     const paperDocs = await Promise.all(
         resp.result.doc_ids.slice(1, 10).map(id => promiseObject({
         id,
-        metadata: httpClient(
-            'https://api.dropboxapi.com/2/paper/docs/get_metadata', 
-            `${process.env.DROPBOX_TOKEN}`,
-            {doc_id: id},
-            []
-        ),
+        metadata: fetchDropboxPaperMetadata(id),
         folder: dbx.paperDocsGetFolderInfo({doc_id: id}).then(r => r.result)
         }))
     )
@@ -115,15 +110,15 @@ export async function getDropboxPaperPost(id: string) {
         throw respFeatures
     }
     const featurePaperAsFiles = respFeatures.result.values
-        .filter(e => "paper_as_files" in e)[0] as dropbox.users.UserFeatureValuePaperAsFiles;
-    if((featurePaperAsFiles.paper_as_files as dropbox.users.PaperAsFilesValueEnabled).enabled) {
+        .filter(e => "paper_as_files" in e)[0] as users.UserFeatureValuePaperAsFiles;
+    if((featurePaperAsFiles.paper_as_files as users.PaperAsFilesValueEnabled).enabled) {
         throw "Not Implemented"
     } 
 
     const resp = await dbx.paperDocsDownload(
         {
             doc_id: id,
-            export_format:  <dropbox.paper.ExportFormatMarkdown>{".tag": "markdown"}
+            export_format:  <paper.ExportFormatMarkdown>{".tag": "markdown"}
         }
     );
     if(resp.status != 200){

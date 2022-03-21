@@ -14,8 +14,10 @@ export default function Layout({ children, home }) {
         <link rel="icon" href="/favicon.ico" />
         <meta
           name="description"
-          content="Learn how to build a personal website using Next.js"
+          content=""
         />
+        <link rel="alternate" type="application/rss+xml" title="awesome"
+          href="/public/rss/atom.xml" />
         <meta
           property="og:image"
           content={`https://og-image.vercel.app/${encodeURI(

@@ -2,6 +2,7 @@ import Head from 'next/head'
 import utilStyles from '../styles/utils.module.css'
 import Layout, { siteTitle } from '../components/layout'
 import { getDropboxPaperDocuments } from '../lib/dropbox_posts';
+import { generateRssFeed } from '../lib/rss';
 import Link from 'next/link'
 import Date from '../components/date'
 
@@ -11,19 +12,19 @@ type IPostData = {
     title: string;
 }
 
-
 export async function getStaticProps() {
-  const allPostsData = await getDropboxPaperDocuments(30)
+  const recentPostData = await getDropboxPaperDocuments(30)
+  generateRssFeed(recentPostData)
   return {
     props: {
-      allPostsData
+      recentPostData
     }
   }
 }
 
 export default function Home({ 
-  allPostsData
-}: {allPostsData: IPostData[]}) {
+  recentPostData
+}: {recentPostData: IPostData[]}) {
   return (
     <Layout home>
       {/* Keep the existing code here */}
@@ -32,7 +33,7 @@ export default function Home({
       <section className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}>
         <h2 className={utilStyles.headingLg}>Blog</h2>
         <ul className={utilStyles.list}>
-          {allPostsData.map(({ id, date, title }) => (
+          {recentPostData.map(({ id, date, title }) => (
             <li className={utilStyles.listItem} key={id}>
               <Link href={`/posts/${id}`}>
                 <a>{title}</a>

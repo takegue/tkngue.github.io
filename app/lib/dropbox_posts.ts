@@ -65,9 +65,13 @@ export async function getDropboxPaperDocuments(limit: number = 10) {
         throw "Not Implemented"
     } 
 
-    const errorHandler = (name, id) => (e) => {
-        console.log(`Error on ${name}: ${id}`, e)
-        return e
+    const errorHandler = (name: string, id: string) => (e: any) => {
+        if('error' in e) {
+            console.log(`Error on ${name}: ${id}`, e.error)
+        } else {
+            console.log(`Error on ${name}: ${id}`, e)
+        }
+        return null
     }
 
     const query = {
@@ -87,7 +91,7 @@ export async function getDropboxPaperDocuments(limit: number = 10) {
     }
 
     const paperDocs = await Promise.all(
-        resp.result.doc_ids.slice(0, 10).map(id => promiseObject({
+        resp.result.doc_ids.map((id: string) => promiseObject({
             id,
             metadata: fetchDropboxPaperMetadata(id)
                 .catch(errorHandler("fetchDropboxPaperMetadata", id)),
@@ -96,11 +100,10 @@ export async function getDropboxPaperDocuments(limit: number = 10) {
                 .catch(errorHandler("dbx.paperDocsGetFolderInfo", id)),
         }))
     )
-    console.dir(paperDocs, {depth: null})
 
     const findKey = "e.1gg8YzoPEhbTkrhvQwJ2zzRRXbLavx0gftrkjbdMUpxi0bPCcY9G"
     return paperDocs
-        .filter(p => p.folders.slice(0)[0]?.id == findKey)
+        .filter(p => (p.folders ?? []).slice(0)[0]?.id == findKey)
         .map((p) => ({
             ...p,
             title: p.metadata?.title,

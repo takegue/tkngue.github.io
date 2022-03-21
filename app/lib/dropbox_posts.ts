@@ -28,8 +28,9 @@ const httpClient = async (
     } else if (res.ok) {
       return res.text()
     } else {
+      const errorMsg = await res.text()
+      console.log(errorMsg)
       return {}  
-      // const errorMsg = await res.text()
       // throw new Error(errorMsg)
     }
    }
@@ -66,7 +67,8 @@ export async function getDropboxPaperDocuments() {
           }, {})
         ));
     }
-    const paperDocs = await Promise.all(resp.result.doc_ids.map(id => promiseObject({
+    const paperDocs = await Promise.all(
+        resp.result.doc_ids.slice(1, 10).map(id => promiseObject({
         id,
         metadata: httpClient(
             'https://api.dropboxapi.com/2/paper/docs/get_metadata', 
@@ -80,16 +82,18 @@ export async function getDropboxPaperDocuments() {
             {doc_id: id},
             []
         )
-    }))).then((post) => ({
-        ...post,
-        title: post.metadata?.title,
-        date: post.metadata.created_date,
-    }))
-    console.log(paperDocs[0])
+        }))
+    )
+    console.log(paperDocs);
 
-    return paperDocs.sort((a:any, b:any) => {
-        const date_a = a.metadata.last_modified_update;
-        const date_b = b.metadata.last_modified_update;
+    return paperDocs
+    .map((p) => ({
+        ...p,
+        title: p.metadata?.title,
+        date: p.metadata.created_date
+    })).sort((a:any, b:any) => {
+        const date_a = a.metadata?.last_modified_update;
+        const date_b = b.metadata?.last_modified_update;
         if(date_a > date_b) {
             return 1
         } else if (date_a < date_b) {
@@ -113,8 +117,8 @@ export async function getDropboxPaperPost(id: string) {
 
     const resp = await dbx.paperDocsDownload(
         {
-          doc_id: id,
-          export_format:  <dropbox.paper.ExportFormatMarkdown>{".tag": "markdown"}
+            doc_id: id,
+            export_format:  <dropbox.paper.ExportFormatMarkdown>{".tag": "markdown"}
         }
     );
     if(resp.status != 200){
@@ -123,10 +127,10 @@ export async function getDropboxPaperPost(id: string) {
     const fileString = (<any> resp.result).fileBinary.toString();
     const content = await remark().use(html).process(fileString)
     return {
-      title: resp.result.title,
-      revision: resp.result.revision,
-      owner: resp.result.owner,
-      content: content,
+        title: resp.result.title,
+        revision: resp.result.revision,
+        owner: resp.result.owner,
+        content: content,
     }
 }
 

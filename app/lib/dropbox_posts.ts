@@ -53,8 +53,7 @@ async function fetchDropboxPaperMetadata(doc_id: string) {
     );
 }
 
-
-export async function getDropboxPaperDocuments(limit: number = 10) {
+export async function getDropboxPaperDocuments(limit: number = 10, options: object) {
     const respFeatures = await dbx.usersFeaturesGetValues({features: [{".tag": "paper_as_files"}]})
     if(respFeatures.status != 200){
         throw respFeatures
@@ -101,7 +100,8 @@ export async function getDropboxPaperDocuments(limit: number = 10) {
         }))
     )
 
-    const findKey = "e.1gg8YzoPEhbTkrhvQwJ2zzRRXbLavx0gftrkjbdMUpxi0bPCcY9G"
+    const findKey: string = options?.folder_key
+
     return paperDocs
         .filter(p => (p.folders ?? []).slice(0)[0]?.id == findKey)
         .map((p) => ({

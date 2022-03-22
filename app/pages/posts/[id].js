@@ -17,7 +17,9 @@ export async function getStaticProps({ params }) {
 }
 
 export async function getStaticPaths() {
-  const allPostsData = await getDropboxPaperDocuments(null)
+  const allPostsData = await getDropboxPaperDocuments(null, {
+    folder_key: process.env.DROPBOXPAPER_FOLDER
+  })
   return {
     paths: allPostsData.map(p => ({ params: { id: p.id } })),
     fallback: false

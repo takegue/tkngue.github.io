@@ -13,7 +13,9 @@ type IPostData = {
 }
 
 export async function getStaticProps() {
-  const recentPostData = await getDropboxPaperDocuments(30)
+  const recentPostData = await getDropboxPaperDocuments(30, {
+    folder_key: process.env.DROPBOXPAPER_FOLDER
+  })
   generateRssFeed(recentPostData)
   return {
     props: {

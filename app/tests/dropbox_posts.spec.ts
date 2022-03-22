@@ -1,11 +1,10 @@
 import { assert, describe, it } from 'vitest'
 
-import { getDropboxPaperDocuments, getDropboxPaperPost} from '../dropbox_posts';
-
+import { getDropboxPaperDocuments, getDropboxPaperPost} from '../lib/dropbox_posts';
 
 describe('Tutorial vitest', () => {
   it('Always wrong', async () => {
-    assert.Equal(1, 0)
+    assert.equal(1, 0)
   });
 });
 // Test Runnning
